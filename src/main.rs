@@ -7,6 +7,46 @@ use bevy_rapier3d::{
     prelude::{ColliderMaterial, ColliderShape},
 };
 
+#[derive(Bundle)]
+struct CoolCubeBundle {
+    #[bundle]
+    pbr_bundle: PbrBundle,
+    #[bundle]
+    rigid_body_bundle: RigidBodyBundle,
+    #[bundle]
+    collider_bundle: ColliderBundle,
+    rigid_body_position_sync: RigidBodyPositionSync,
+}
+
+impl CoolCubeBundle {
+    fn new(
+        mut meshes: ResMut<Assets<Mesh>>,
+        mut materials: ResMut<Assets<StandardMaterial>>,
+    ) -> Self {
+        Self {
+            pbr_bundle: PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                ..Default::default()
+            },
+            rigid_body_bundle: RigidBodyBundle {
+                position: Vec3::new(0.0, 10.0, 0.0).into(),
+                ..Default::default()
+            },
+            collider_bundle: ColliderBundle {
+                shape: ColliderShape::cuboid(0.5, 0.5, 0.5).into(),
+                material: ColliderMaterial {
+                    restitution: 0.7,
+                    ..Default::default()
+                }
+                .into(),
+                ..Default::default()
+            },
+            rigid_body_position_sync: RigidBodyPositionSync::Discrete,
+        }
+    }
+}
+
 pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -25,26 +65,7 @@ pub fn setup(
         })
         .insert(RigidBodyPositionSync::Discrete);
     // Cube
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-            ..Default::default()
-        })
-        .insert_bundle(RigidBodyBundle {
-            position: Vec3::new(0.0, 10.0, 0.0).into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(0.5, 0.5, 0.5).into(),
-            material: ColliderMaterial {
-                restitution: 0.7,
-                ..Default::default()
-            }
-            .into(),
-            ..Default::default()
-        })
-        .insert(RigidBodyPositionSync::Discrete);
+    commands.spawn_bundle(CoolCubeBundle::new(meshes, materials));
     // Light
     commands.spawn_bundle(PointLightBundle {
         point_light: PointLight {
@@ -64,11 +85,15 @@ pub fn setup(
         .insert(FlyCam);
 }
 
-fn move_light_system(time: Res<Time>, mut query: Query<&mut Transform, With<PointLight>>) {
+fn move_light(time: Res<Time>, mut query: Query<&mut Transform, With<PointLight>>) {
     let factor = (time.seconds_since_startup() as f32) % 20.0 - 10.0;
     let mut transform = query.single_mut();
     transform.translation = Vec3::new(4.0, 8.0, 4.0 + factor);
 }
+
+// fn spawn_cubes_on_click(buttons: Res<Input<MouseButton>>, fly_cam_query: Query<) {
+//     if buttons.just_pressed(MouseButton::Left) {}
+// }
 
 fn main() {
     App::new()
@@ -81,6 +106,6 @@ fn main() {
             speed: 12.0,          // default: 12.0
         })
         .add_startup_system(setup)
-        .add_system(move_light_system)
+        .add_system(move_light)
         .run()
 }
