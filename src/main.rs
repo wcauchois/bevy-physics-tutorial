@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin};
 
 pub fn setup(
     mut commands: Commands,
@@ -25,16 +26,23 @@ pub fn setup(
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
-    });
+    commands
+        .spawn_bundle(PerspectiveCameraBundle {
+            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        })
+        .insert(FlyCam);
 }
 
 fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
+        .add_plugin(NoCameraPlayerPlugin)
+        .insert_resource(MovementSettings {
+            sensitivity: 0.00012, // default: 0.00012
+            speed: 12.0,          // default: 12.0
+        })
         .add_startup_system(setup)
         .run()
 }
