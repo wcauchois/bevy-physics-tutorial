@@ -7,8 +7,9 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.6.1"
-bevy_rapier3d = "0.12.1"
+bevy_rapier3d = { version = "0.12.1", features = ["simd-stable"] }
 bevy_flycam = "0.6.0"
+nalgebra = "0.30.1"
 
 # https://bevy-cheatbook.github.io/pitfalls/performance.html
 # Enable only a small amount of optimization in debug mode

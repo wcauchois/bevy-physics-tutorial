@@ -200,6 +200,7 @@ dependencies = [
  "bevy",
  "bevy_flycam",
  "bevy_rapier3d",
+ "nalgebra",
 ]
 
 [[package]]
@@ -2563,6 +2564,7 @@ dependencies = [
  "parry3d",
  "rustc-hash",
  "simba",
+ "vec_map",
 ]
 
 [[package]]
