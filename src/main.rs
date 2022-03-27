@@ -146,9 +146,14 @@ fn spawn_cubes_on_click(
 fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
+        .insert_resource(bevy_atmosphere::AtmosphereMat::default())
         .add_plugins(DefaultPlugins)
         .add_plugin(NoCameraPlayerPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(bevy_atmosphere::AtmospherePlugin {
+            dynamic: false, // Set to false since we aren't changing the sky's appearance
+            sky_radius: 10.0,
+        })
         .insert_resource(MovementSettings {
             sensitivity: 0.00012, // default: 0.00012
             speed: 12.0,          // default: 12.0

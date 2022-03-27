@@ -178,6 +178,7 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97342ea2f3bad36be2ded1d1fbd569ff83147b70697f12f1579e87a7480afa36"
 dependencies = [
+ "bevy_dylib",
  "bevy_internal",
 ]
 
@@ -198,6 +199,7 @@ name = "bevy-physics-tutorial"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_atmosphere",
  "bevy_flycam",
  "bevy_rapier3d",
  "nalgebra",
@@ -243,6 +245,16 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "bevy_atmosphere"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4cd6aa8403342d49674adabe29a2372a39705c44e6b3907bad29d30eb080594"
+dependencies = [
+ "bevy",
+ "naga",
 ]
 
 [[package]]
@@ -324,6 +336,15 @@ dependencies = [
  "bevy_ecs",
  "bevy_log",
  "bevy_utils",
+]
+
+[[package]]
+name = "bevy_dylib"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37e4fbd14b69af53cd9638c1071b74a3f66fc2ae826fa7c8f02ff15a65d65fd3"
+dependencies = [
+ "bevy_internal",
 ]
 
 [[package]]
