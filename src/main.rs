@@ -34,6 +34,12 @@ pub fn setup(
         .insert(FlyCam);
 }
 
+fn move_light_system(time: Res<Time>, mut query: Query<&mut Transform, With<PointLight>>) {
+    let factor = (time.seconds_since_startup() as f32) % 20.0 - 10.0;
+    let mut transform = query.single_mut();
+    transform.translation = Vec3::new(4.0, 8.0, 4.0 + factor);
+}
+
 fn main() {
     App::new()
         .insert_resource(Msaa { samples: 4 })
@@ -44,5 +50,6 @@ fn main() {
             speed: 12.0,          // default: 12.0
         })
         .add_startup_system(setup)
+        .add_system(move_light_system)
         .run()
 }
