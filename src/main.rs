@@ -18,10 +18,14 @@ struct CoolCubeBundle {
     rigid_body_position_sync: RigidBodyPositionSync,
 }
 
+#[derive(Component)]
+struct CursorThing;
+
 impl CoolCubeBundle {
     fn new(
-        mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
+        position: Vec3,
     ) -> Self {
         Self {
             pbr_bundle: PbrBundle {
@@ -30,7 +34,7 @@ impl CoolCubeBundle {
                 ..Default::default()
             },
             rigid_body_bundle: RigidBodyBundle {
-                position: Vec3::new(0.0, 10.0, 0.0).into(),
+                position: position.into(),
                 ..Default::default()
             },
             collider_bundle: ColliderBundle {
@@ -55,7 +59,7 @@ pub fn setup(
     // Plane (ground)
     commands
         .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+            mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
             material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
             ..Default::default()
         })
@@ -65,7 +69,11 @@ pub fn setup(
         })
         .insert(RigidBodyPositionSync::Discrete);
     // Cube
-    commands.spawn_bundle(CoolCubeBundle::new(meshes, materials));
+    commands.spawn_bundle(CoolCubeBundle::new(
+        &mut meshes,
+        &mut materials,
+        Vec3::new(0.0, 10.0, 0.0),
+    ));
     // Light
     commands.spawn_bundle(PointLightBundle {
         point_light: PointLight {
@@ -83,6 +91,21 @@ pub fn setup(
             ..Default::default()
         })
         .insert(FlyCam);
+    // Cursor thingy
+    commands
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Icosphere {
+                radius: 0.2,
+                subdivisions: 32,
+            })),
+            material: materials.add(StandardMaterial {
+                base_color: Color::rgba(0.9, 0.9, 0.0, 0.5),
+                alpha_mode: AlphaMode::Blend,
+                ..Default::default()
+            }),
+            ..Default::default()
+        })
+        .insert(CursorThing);
 }
 
 fn move_light(time: Res<Time>, mut query: Query<&mut Transform, With<PointLight>>) {
@@ -91,9 +114,34 @@ fn move_light(time: Res<Time>, mut query: Query<&mut Transform, With<PointLight>
     transform.translation = Vec3::new(4.0, 8.0, 4.0 + factor);
 }
 
-// fn spawn_cubes_on_click(buttons: Res<Input<MouseButton>>, fly_cam_query: Query<) {
-//     if buttons.just_pressed(MouseButton::Left) {}
-// }
+fn spawn_position_for_transform(transform: &Transform) -> Vec3 {
+    transform.translation + (transform.rotation.mul_vec3(Vec3::Z) * -6.0)
+}
+
+fn move_cursor_thing(
+    mut q: QuerySet<(
+        QueryState<&mut Transform, With<CursorThing>>,
+        QueryState<&Transform, With<FlyCam>>,
+    )>,
+) {
+    let pos = spawn_position_for_transform(q.q1().single());
+    q.q0().single_mut().translation = pos;
+}
+
+fn spawn_cubes_on_click(
+    buttons: Res<Input<MouseButton>>,
+    camera_query: Query<&Transform, With<FlyCam>>,
+
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let camera_transform = camera_query.single();
+    if buttons.just_pressed(MouseButton::Left) {
+        let pos = spawn_position_for_transform(camera_transform);
+        commands.spawn_bundle(CoolCubeBundle::new(&mut meshes, &mut materials, pos));
+    }
+}
 
 fn main() {
     App::new()
@@ -107,5 +155,7 @@ fn main() {
         })
         .add_startup_system(setup)
         .add_system(move_light)
+        .add_system(spawn_cubes_on_click)
+        .add_system(move_cursor_thing)
         .run()
 }
